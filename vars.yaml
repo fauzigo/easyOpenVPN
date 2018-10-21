@@ -1,0 +1,32 @@
+%YAML 1.2
+---
+server:
+  cert_subject:
+    common_name: example.com
+    country: US
+    state: Illinois
+    city: Chicago
+    organization: Example INC.
+    organization_unit: the guy
+    email: noreply@example.com
+  conf_location: /etc/openvpn
+  cert_location:
+    ca:
+      cert: /etc/openvpn/server
+      key: /etc/openvpn/server
+    server:
+      cert: /etc/openvpn/server
+      key: /etc/openvpn/server
+    dh: /etc/openvpn/server
+    tls: /etc/openvpn/server
+  service:
+    proto: udp
+    dev_type: tun
+    port: 1194
+    subnet: 10.8.0.0
+    subnet_mask: 255.255.255.0
+    dns1: 37.235.1.174
+    dns2: 37.235.1.177
+  logs_location: /var/log
+clients:
+  certs_duration: 30
