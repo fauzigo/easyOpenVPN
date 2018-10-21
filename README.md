@@ -10,7 +10,8 @@ Downsides of this is that clients would be able to login into the server without
 
 # Usage
 
-```# ./easyOpenVPN.sh -h
+```
+# ./easyOpenVPN.sh -h
 Usage: ./easyOpenVPN.sh [-i|--init </etc/openvpn>] [-c|--client <client> </etc/openvpn>] [-r|--revoke </path/to/cert> ]
 
   -i|--init would create a CA and server certs along with a default config file for OpenVPN
@@ -19,7 +20,8 @@ Usage: ./easyOpenVPN.sh [-i|--init </etc/openvpn>] [-c|--client <client> </etc/o
   -c|--client would create a folder with all the necessary to start the client
   clients require a name.
 
-  -r|--revoke-client would revoke a client's cert given the common name of the cert```
+  -r|--revoke-client would revoke a client's cert given the common name of the cert
+```
 
 
 This might not work for everyone else, but it might help others.
