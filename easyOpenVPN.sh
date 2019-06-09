@@ -267,6 +267,7 @@ pull
 persist-key
 persist-tun
 cipher AES-256-CBC
+tls-client
 
 <ca>
 $(cat ${CPATH}ca.crt)
