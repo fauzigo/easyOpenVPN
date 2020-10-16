@@ -1,3 +1,8 @@
+# OpenVPN 
+
+Provides flexible VPN solutions to secure your data communications, whether it's for Internet privacy, remote access for employees, securing IoT, or for networking Cloud data centers.
+Our VPN Server software solution can be deployed on-premises using standard servers or virtual appliances, or on the cloud.
+
 # TL;DR
 
 This repo is supposed to help out the creation of a OpenVPN server's configuration file along with the clients configuration files and certs.
