@@ -381,13 +381,13 @@ function usage
 {
 	echo "Usage: $0 [-i|--init </etc/openvpn>] [-c|--client <client> </etc/openvpn>] [-r|--revoke </path/to/cert> ]" 1>&2
 	echo 
-	echo "  -i|--init would create a CA and server certs along with a default config file for OpenVPN"
+	echo "  -i|--init create a CA and server certs along with a default config file for OpenVPN"
 	echo "  You may pass along the location were your files will be created. A folder within said directory will be created <path>/server"
 	echo
-	echo "  -c|--client would create a folder with all the necessary to start the client"
+	echo "  -c|--client create a folder with all the necessary to start a client"
 	echo "  clients require a name and a path where the ca{.key,.crt} are"
 	echo
-	echo "  -r|--revoke-client would revoke a client's cert given the common name of the cert"
+	echo "  -r|--revoke-client revoke a client's cert given the common name of the cert"
 	echo "  the client's name is required"
 }
 
