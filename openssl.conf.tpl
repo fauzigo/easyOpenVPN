@@ -130,8 +130,8 @@ keyUsage               = digitalSignature
 basicConstraints       = CA:FALSE
 nsCertType             = server
 nsComment              = "OpenSSL Generated Server Certificate"
-subjectKeyIdentifier   = hash
-authorityKeyIdentifier = keyid,issuer:always
+# subjectKeyIdentifier   = hash
+# authorityKeyIdentifier = keyid,issuer:always
 extendedKeyUsage       = serverAuth
 keyUsage               = digitalSignature, keyEncipherment
 

@@ -145,10 +145,10 @@ function initialize
 
 	# This is for tls authentication
 	echo "Generating a tlsauth file"
-	TORUN="openvpn --genkey --secret ${SERVER_TLS}/myvpn.tlsauth"
+	# TORUN="openvpn --genkey --secret ${SERVER_TLS}/myvpn.tlsauth"
+	TORUN="openvpn --genkey --tls-auth |tee ${SERVER_TLS}/myvpn.tlsauth"
 	echo ${TORUN}
 	eval ${TORUN}
-	#openvpn --genkey --secret ${SERVER_TLS}/myvpn.tlsauth
 
 	if [ $? -gt 0 ];
 	then
