@@ -28,5 +28,7 @@ server:
     dns1: 37.235.1.174
     dns2: 37.235.1.177
   logs_location: /var/log
+  user: nobody
+  group: nogroup
 clients:
   certs_duration: 30

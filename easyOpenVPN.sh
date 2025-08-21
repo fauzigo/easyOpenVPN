@@ -180,8 +180,8 @@ push "dhcp-option DNS ${SERVICE_DNS2}"
 keepalive 10 120
 tls-crypt ${SERVER_TLS}/myvpn.tlsauth
 cipher AES-256-CBC
-user nobody
-group nogroup
+user ${SERVER_USER}
+group ${SERVER_GROUP}
 persist-key
 persist-tun
 status      ${LOGS}/openvpn-status.log
@@ -269,6 +269,7 @@ persist-key
 persist-tun
 cipher AES-256-CBC
 tls-client
+tls-cipher "DEFAULT:@SECLEVEL=0"
 
 <ca>
 $(cat ${CPATH}ca.crt)
@@ -325,6 +326,8 @@ function get_vars
 			SERVER_KEY=$(yq -r .server.cert_location.server.key ${SCRIPTPATH}/vars.yaml)
 			SERVER_DH=$(yq -r .server.cert_location.dh ${SCRIPTPATH}/vars.yaml)
 			SERVER_TLS=$(yq -r .server.cert_location.tls ${SCRIPTPATH}/vars.yaml)
+			SERVER_USER=$(yq -r .server.user ${SCRIPTPATH}/vars.yaml)
+			SERVER_GROUP=$(yq -r .server.group ${SCRIPTPATH}/vars.yaml)
 
 			# Networking Configuration
 			SERVICE_PROTO=$(yq -r .server.service.proto ${SCRIPTPATH}/vars.yaml)
