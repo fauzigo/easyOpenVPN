@@ -47,3 +47,87 @@ You can edit the script file directly, or you can add all required parameters in
 # Considerations 
 
 This comes without any warraty, use at your own risk.
+
+
+---
+
+Quick VPN set up in AWS
+
+
+Launch an instance
+```
+aws ec2 run-instances --image-id $(aws ec2 describe-images --filters "Name=name,Values=al2023-ami-2023*" "Name=architecture,Values=x86_64" --query "Images | sort_by(@, &CreationDate) | [-1].ImageId" --output text) --instance-type t3.micro --key-name $(aws ec2 describe-key-pairs |jq '.KeyPairs[0].KeyName' -r) --security-group-ids $(aws ec2 describe-security-groups |jq '.SecurityGroups[] | select(.GroupName != "default").GroupId' -r) --subnet-id $(aws ec2 describe-subnets |jq '.Subnets[0].SubnetId' -r)
+```
+
+
+SSH into the new hosts
+```
+ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -A $(aws ec2 describe-instances --query "Reservations[].Instances[].NetworkInterfaces[].Association.PublicDnsName[]" --output text) -l ec2-user
+```
+
+### Server side
+
+Install a few dependencies
+```
+sudo yum install git python3-pip openvpn
+sudo pip install yq          # Yes, this is no bueno, but no plans to keep this as a permanent server
+```
+
+Clone the repo
+```
+git clone git@github.com:fauzigo/easyOpenVPN.git
+cd easyOpenVPN
+```
+
+Edit the variables files
+```
+vim vars.yaml
+```
+
+Init the configuration
+```
+sudo ./easyOpenVPN.sh -i
+```
+
+Enable ip forwarding
+```
+echo 1 |sudo tee /proc/sys/net/ipv4/ip_forward
+```
+
+Masquerade traffic going out VPN server
+```
+sudo iptables -t nat -I POSTROUTING -o ens5 -j MASQUERADE
+```
+
+Create a client
+```
+sudo ./easyOpenVPN.sh -c a1
+```
+
+Pack client files
+```
+sudo tar cvf a1.tar /etc/openvpn/a1/*
+```
+
+Start server
+```
+sudo openvpn --config /etc/openvpn/server.conf
+```
+
+### Client side
+
+Copy config to client
+```
+scp ec2-user@$(aws ec2 describe-instances --query "Reservations[].Instances[].NetworkInterfaces[].Association.PublicDnsName[]" --output text):/home/ec2-user/a1.tar ./
+```
+
+Unpack
+```
+tar xf a1.tar
+```
+
+Start Client
+```
+sudo /opt/homebrew/opt/openvpn/sbin/openvpn --config a1.ovpn
+```
+
