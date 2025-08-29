@@ -131,6 +131,11 @@ Start Client
 sudo /opt/homebrew/opt/openvpn/sbin/openvpn --config a1.ovpn
 ```
 
+## When done with the instance
+```
+aws ec2 terminate-instances --instance-ids $(aws ec2 describe-instances --query "Reservations[].Instances[].InstanceId"  --output text)
+```
+
 ### Additions
 
 Consider running a DNS server with named for example:
