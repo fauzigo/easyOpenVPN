@@ -16,6 +16,32 @@ sudo tar cvf /home/ec2-user/a1.tar /etc/openvpn/a1/*
 
 sleep 1
 
+cat > /etc/systemd/system/openvpn@.service<<EOF
+[Unit]
+Description=OpenVPN service for %i
+After=syslog.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+PrivateTmp=true
+WorkingDirectory=/etc/openvpn/%i/
+ExecStart=/usr/sbin/openvpn --config /etc/openvpn/%i.conf
+CapabilityBoundingSet=CAP_IPC_LOCK CAP_NET_ADMIN CAP_NET_BIND_SERVICE CAP_NET_RAW CAP_SETGID CAP_SETUID CAP_SYS_CHROOT CAP_DAC_OVERRIDE
+LimitNPROC=10
+DeviceAllow=/dev/null rw
+DeviceAllow=/dev/net/tun rw
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl enable openvpn@server.service
+sudo systemctl start openvpn@server.service
+
+
+sleep 1
+
 cat > /etc/named.conf <<EOF
 options {
 	listen-on port 53 { any; };

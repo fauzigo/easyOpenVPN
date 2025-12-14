@@ -51,85 +51,115 @@ This comes without any warraty, use at your own risk.
 
 ---
 
-Quick VPN set up in AWS
+## Quick VPN set up in AWS
 
 
-Launch an instance
+### Launch an instance
 ```
 aws ec2 run-instances --image-id $(aws ec2 describe-images --filters "Name=name,Values=al2023-ami-2023*" "Name=architecture,Values=x86_64" --query "Images | sort_by(@, &CreationDate) | [-1].ImageId" --output text) --instance-type t3.micro --key-name $(aws ec2 describe-key-pairs |jq '.KeyPairs[0].KeyName' -r) --security-group-ids $(aws ec2 describe-security-groups |jq '.SecurityGroups[] | select(.GroupName != "default").GroupId' -r) --subnet-id $(aws ec2 describe-subnets |jq '.Subnets[0].SubnetId' -r)
 ```
 
 
-SSH into the new hosts
+### SSH into the new hosts
 ```
 ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -A $(aws ec2 describe-instances --query "Reservations[].Instances[].NetworkInterfaces[].Association.PublicDnsName[]" --output text) -l ec2-user
 ```
 
 ### Server side
 
-Install a few dependencies
+#### Install a few dependencies
 ```
 sudo yum install git python3-pip openvpn
 sudo pip install yq          # Yes, this is no bueno, but no plans to keep this as a permanent server
 ```
 
-Clone the repo
+#### Clone the repo
 ```
 git clone git@github.com:fauzigo/easyOpenVPN.git
 cd easyOpenVPN
 ```
 
-Edit the variables files
+#### Edit the variables files
 ```
 vim vars.yaml
 ```
 
-Init the configuration
+#### Init the configuration
 ```
 sudo ./easyOpenVPN.sh -i
 ```
 
-Enable ip forwarding
+#### Enable ip forwarding
 ```
 echo 1 |sudo tee /proc/sys/net/ipv4/ip_forward
 ```
 
-Masquerade traffic going out VPN server
+#### Masquerade traffic going out VPN server
 ```
 sudo iptables -t nat -I POSTROUTING -o ens5 -j MASQUERADE
 ```
 
-Create a client
+#### Create a client
 ```
 sudo ./easyOpenVPN.sh -c a1
 ```
 
-Pack client files
+#### Pack client files
 ```
 sudo tar cvf a1.tar /etc/openvpn/a1/*
 ```
 
-Start server
+#### Start server
 ```
 sudo openvpn --config /etc/openvpn/server.conf
 ```
 
+#### Alternatively, run everything off a script
+
+```
+aws ec2 run-instances --image-id $(aws ec2 describe-images --filters "Name=name,Values=al2023-ami-2023*" "Name=architecture,Values=x86_64" --query "Images | sort_by(@, &CreationDate) | [-1].ImageId" --output text) --instance-type t3.micro --key-name $(aws ec2 describe-key-pairs |jq '.KeyPairs[0].KeyName' -r) --security-group-ids $(aws ec2 describe-security-groups |jq '.SecurityGroups[] | select(.GroupName != "default").GroupId' -r) --subnet-id $(aws ec2 describe-subnets |jq '.Subnets[0].SubnetId' -r) --user-data file://user-data
+```
+
+
+#### Update dns record
+
+```
+tmp=$(mktemp)
+domain="domain.com"
+subdomain="vpn.${domain}"
+jq  --arg a "${subdomain}" --arg val "$(aws ec2 describe-instances --query "Reservations[].Instances[].NetworkInterfaces[].Association.PublicIp[]" --output text)" '.Changes[0].ResourceRecordSet |= (.Name = $a | .ResourceRecords[0].Value = $val)' resources/record-update.json > ${tmp}
+aws route53 change-resource-record-sets --hosted-zone-id $(aws route53 list-hosted-zones |jq -r '.HostedZones[] |select(.Name == "'${domain}'.") | .Id' |cut -d/ -f3) --change-batch file://${tmp}
+```
+
+#### Update security group to grant vpn access
+```
+sec_group_id=$(aws ec2 describe-security-groups |jq '.SecurityGroups[] | select(.GroupName != "default").GroupId' -r)
+aws ec2 modify-security-group-rules --group-id ${sec_group_id} --security-group-rules SecurityGroupRuleId=$(aws ec2 describe-security-group-rules | jq -r '.SecurityGroupRules[] |select(.GroupId == "'$(aws ec2 describe-security-groups |jq '.SecurityGroups[] | select(.GroupName != "default").GroupId' -r)'") |select(.Description == "VPNAcess") |.SecurityGroupRuleId'),SecurityGroupRule="{Description=VPNAcess,IpProtocol=-1,CidrIpv4=$(curl -s4 ifconfig.io)/32}"
+```
+
+
+&nbsp;
+
 ### Client side
 
-Copy config to client
+#### Copy config to client
 ```
 scp ec2-user@$(aws ec2 describe-instances --query "Reservations[].Instances[].NetworkInterfaces[].Association.PublicDnsName[]" --output text):/home/ec2-user/a1.tar ./
 ```
 
-Unpack
+#### Unpack
 ```
 tar xf a1.tar
 ```
 
-Start Client
+#### Start Client
 ```
+sed  -i.bck "s/example\.com/${subdomain}/g" etc/openvpn/a1/a1.ovpn
 sudo /opt/homebrew/opt/openvpn/sbin/openvpn --config a1.ovpn
 ```
+
+
+---
 
 ## When done with the instance
 ```
