@@ -117,7 +117,14 @@ sudo openvpn --config /etc/openvpn/server.conf
 #### Alternatively, run everything off a script
 
 ```
-aws ec2 run-instances --image-id $(aws ec2 describe-images --filters "Name=name,Values=al2023-ami-2023*" "Name=architecture,Values=x86_64" --query "Images | sort_by(@, &CreationDate) | [-1].ImageId" --output text) --instance-type t3.micro --key-name $(aws ec2 describe-key-pairs |jq '.KeyPairs[0].KeyName' -r) --security-group-ids $(aws ec2 describe-security-groups |jq '.SecurityGroups[] | select(.GroupName != "default").GroupId' -r) --subnet-id $(aws ec2 describe-subnets |jq '.Subnets[0].SubnetId' -r) --user-data file://user-data
+aws ec2 run-instances \
+  --image-id $(aws ec2 describe-images --filters "Name=name,Values=al2023-ami-2023*" "Name=architecture,Values=x86_64" \
+  --query "Images | sort_by(@, &CreationDate) | [-1].ImageId" --output text) \
+  --instance-type t3.micro \
+  --key-name $(aws ec2 describe-key-pairs |jq '.KeyPairs[0].KeyName' -r) \
+  --security-group-ids $(aws ec2 describe-security-groups |jq '.SecurityGroups[] | select(.GroupName != "default").GroupId' -r) \
+  --subnet-id $(aws ec2 describe-subnets |jq '.Subnets[0].SubnetId' -r) \
+  --user-data file://user-data
 ```
 
 
